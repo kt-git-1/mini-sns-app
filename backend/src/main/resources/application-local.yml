@@ -1,0 +1,26 @@
+# このファイルは "local" プロファイル有効時のみ読み込まれる
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:sns_db}
+    username: ${POSTGRES_USER:sns_user}
+    password: ${POSTGRES_PASSWORD:sns_pass}
+    hikari:
+      maximum-pool-size: 5
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+# ローカルだけ詳細ログ（SQLやバインド値）を出す
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE   # Hibernate 6 でのバインド値
+    # org.hibernate.type.descriptor.sql: TRACE  # ← さらに詳細（必要時のみ）
+
+server:
+  port: 8080
