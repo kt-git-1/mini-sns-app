@@ -24,3 +24,8 @@ logging:
 
 server:
   port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-secret-change-me-please-32bytes-minimum-aaaaaaaa}
+    expires-in-sec: 86400
