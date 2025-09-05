@@ -28,7 +28,8 @@ public class HealthController {
             return ResponseEntity.ok(Map.of("status", "ok", "db", "up", "check", one));
         } catch (DataAccessException ex) {
             return ResponseEntity.status(503).body(
-                    Map.of("status", "degraded", "db", "down", "error", ex.getClass().getSimpleName()));
+                    Map.of("status","degraded","db","down","path","/health/db")
+            );
         }
     }
 }
