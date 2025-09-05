@@ -1,6 +1,8 @@
 spring:
   application:
     name: mini-sns
+  messages:
+    basename: messages
   jpa:
     hibernate:
       ddl-auto: none      # ← スキーマはFlywayで管理
