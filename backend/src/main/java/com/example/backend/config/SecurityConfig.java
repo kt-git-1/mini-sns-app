@@ -1,6 +1,8 @@
 package com.example.backend.config;
 
 import com.example.backend.security.JwtAuthFilter;
+import com.example.backend.web.log.AccessLogFilter;
+import com.example.backend.web.log.RequestIdFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,7 +24,14 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) { this.jwtAuthFilter = jwtAuthFilter; }
+    private final RequestIdFilter requestIdFilter;
+    private final AccessLogFilter accessLogFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, RequestIdFilter requestIdFilter, AccessLogFilter accessLogFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.requestIdFilter = requestIdFilter;
+        this.accessLogFilter = accessLogFilter;
+    }
 
     /** パスワードハッシュ用（signupで使用） */
     @Bean
@@ -46,6 +55,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -68,6 +78,11 @@ public class SecurityConfig {
                     })
             );
 
+        // リクエストIDを付与するフィルタを最初に追加
+        http.addFilterBefore(requestIdFilter, JwtAuthFilter.class);
+        // JWT検証の後にアクセスログを記録
+        http.addFilterAfter(accessLogFilter, JwtAuthFilter.class);
+        // 既存のJWTフィルタを追加
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

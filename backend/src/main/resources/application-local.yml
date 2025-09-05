@@ -20,6 +20,7 @@ logging:
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE   # Hibernate 6 でのバインド値
+    com.example.backend.web.log: INFO
     # org.hibernate.type.descriptor.sql: TRACE  # ← さらに詳細（必要時のみ）
 
 server:

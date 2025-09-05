@@ -4,11 +4,14 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.MDC;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.UUID;
 
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @Component
 public class RequestIdFilter implements Filter {
     private static final String HDR = "X-Request-ID";
