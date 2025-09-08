@@ -37,8 +37,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = """
     SELECT p.*
       FROM posts p
-     WHERE (p.author_id = :me
-            OR p.author_id IN (SELECT followed_id FROM follows WHERE follower_id = :me))
+     WHERE (p.user_id = :me
+            OR p.user_id IN (SELECT followed_id FROM follows WHERE follower_id = :me))
        AND (p.created_at, p.id) < (:cursorAt, :cursorId)
      ORDER BY p.created_at DESC, p.id DESC
      LIMIT :size

@@ -6,11 +6,11 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 public class TimelineDtos {
-public record TimelineItem(Long id, Long authorId, OffsetDateTime createdAt, String content) {
+public record TimelineItem(Long id, Long userId, OffsetDateTime createdAt, String content) {
         public static TimelineItem from(Post p) {
-            Long authorId = (p.getUser() != null) ? p.getUser().getId() : null;
+            Long userId = (p.getUser() != null) ? p.getUser().getId() : null;
             OffsetDateTime createdAt = (p.getCreatedAt() != null) ? p.getCreatedAt(): null;
-            return new TimelineItem(p.getId(), authorId, createdAt, p.getContent());
+            return new TimelineItem(p.getId(), userId, createdAt, p.getContent());
         }
     }
 
