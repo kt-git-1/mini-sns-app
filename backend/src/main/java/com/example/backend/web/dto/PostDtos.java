@@ -21,9 +21,4 @@ public class PostDtos {
             String content,
             OffsetDateTime createdAt
     ) {}
-
-    public record TimelineResponse(
-            List<PostResponse> items,
-            String nextCursor // null のとき終端
-    ) {}
 }

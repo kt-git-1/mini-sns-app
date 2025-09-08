@@ -18,15 +18,4 @@ public class PostController {
     public PostDtos.PostResponse create(Authentication auth, @RequestBody @Valid PostDtos.CreatePostRequest req) {
         return posts.create(auth.getName(), req.content());
     }
-
-    @GetMapping("/timeline")
-    public PostDtos.TimelineResponse timeline(
-            Authentication auth,
-            @jakarta.validation.constraints.Min(1) @jakarta.validation.constraints.Max(50)
-            @RequestParam(value = "limit", required = false)
-            Integer limit,
-            @RequestParam(value = "cursor", required = false) String cursor
-    ) {
-        return posts.timeline(auth.getName(), limit, cursor);
-    }
 }
