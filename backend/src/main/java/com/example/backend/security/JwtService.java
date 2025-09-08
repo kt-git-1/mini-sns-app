@@ -52,7 +52,7 @@ public class JwtService {
                 .claim("roles", roles == null ? List.of() : roles)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusSeconds(expiresInSec)))
-                .signWith(secretKey) // HS256
+                .signWith(secretKey, Jwts.SIG.HS256)
                 .compact();
     }
 
