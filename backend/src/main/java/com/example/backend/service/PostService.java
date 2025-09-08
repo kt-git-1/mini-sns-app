@@ -39,32 +39,6 @@ public class PostService {
         return toDto(post);
     }
 
-    @Transactional(readOnly = true)
-    public PostDtos.TimelineResponse timeline(String username, Integer limit, String cursor) {
-        User me = users.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(UNAUTHORIZED, "user not found"));
-
-        // ページサイズ（limit）の正規化
-        int lim = (limit == null || limit <= 0 || limit > 50) ? 20 : limit;
-
-        // 将来: フォローしているIDも追加する（V2で follows を導入したらここを拡張）
-        List<Long> scopeUserIds = List.of(me.getId());
-
-        var cur = CursorUtil.decode(cursor);
-        var page = (cur == null)
-                ? posts.findFirstPage(scopeUserIds, PageRequest.of(0, lim))
-                : posts.findNextPage(scopeUserIds, cur.createdAt(), cur.id(), PageRequest.of(0, lim));
-
-        var items = page.stream().map(this::toDto).toList();
-
-        String next = null;
-        if (items.size() == lim) {
-            var last = page.get(page.size() - 1);
-            next = CursorUtil.encode(last.getCreatedAt(), last.getId());
-        }
-        return new PostDtos.TimelineResponse(items, next);
-    }
-
     private PostDtos.PostResponse toDto(Post p) {
         return new PostDtos.PostResponse(
                 p.getId(),
