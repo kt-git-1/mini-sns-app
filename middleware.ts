@@ -1,28 +1,54 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/api/session", "/favicon", "/_next"];
+/** .env から名前が来ない事故を避ける保険 */
+const COOKIE_NAME = process.env.SESSION_COOKIE_NAME ?? "ms_token";
 
-export function middleware(req: NextRequest) {
-  // 公開パスなら素通り
-  if (PUBLIC_PATHS.some((p) => req.nextUrl.pathname.startsWith(p))) {
-    return NextResponse.next();
-  }
+/** 公開パス（permitAll） */
+const PUBLIC_PATHS = [
+  "/login",
+  "/signup",
+  "/api/session",          // セッション操作は未認証でもOK
+  "/favicon",
+  "/favicon.ico",
+  "/robots.txt",
+  "/sitemap.xml",
+  "/manifest.webmanifest",
+  "/_next",                // Nextの内部アセット
+];
 
-  // 認証チェック（例：httpOnly CookieにJWTを保存している前提）
-  const token = req.cookies.get(process.env.SESSION_COOKIE_NAME!)?.value;
-  if (!token) {
-    const url = new URL("/login", req.url);
-    url.searchParams.set("next", req.nextUrl.pathname); // 任意: 復帰先
-    return NextResponse.redirect(url);
-  }
-
-  return NextResponse.next();
+/** ヘルパ：対象パスが公開かどうか */
+function isPublic(pathname: string) {
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
-// どのパスで実行するか（URLベースで指定）
+export function middleware(req: NextRequest) {
+  const { pathname, search } = req.nextUrl;
+
+  // 公開パスは素通り
+  if (isPublic(pathname)) return NextResponse.next();
+
+  // 認証チェック（httpOnly CookieでJWTを保持している前提）
+  const token = req.cookies.get(COOKIE_NAME)?.value;
+  if (token) return NextResponse.next();
+
+  // --- 未認証時の分岐 ---
+  // 1) APIリクエストは 401(JSON) を返す（リダイレクトではなく）
+  if (pathname.startsWith("/api")) {
+    // CORSプリフライトは許可（必要に応じてヘッダ追加）
+    if (req.method === "OPTIONS") return new NextResponse(null, { status: 204 });
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // 2) HTMLナビゲーションは /login へリダイレクト（復帰先にクエリも含める）
+  const url = new URL("/login", req.url);
+  url.searchParams.set("next", pathname + (search || ""));
+  return NextResponse.redirect(url);
+}
+
+/** どのURLでミドルウェアを走らせるか */
 export const config = {
   matcher: [
-    // API全スキップなら '/((?!api|_next|favicon).*)' などに調整
+    // 静的アセット等を除外。必要なら /api をここで丸ごと除外することも可能。
     "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };
